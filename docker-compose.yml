@@ -1,0 +1,48 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:13
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: testdb
+    ports:
+      - "5432:5432"
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+    networks:
+      - finance_network
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "postgres"]
+      interval: 10s
+      retries: 5
+
+  app:
+    build: .
+    environment:
+      DATABASE_URL: postgres://postgres:postgres@db:5432/testdb?sslmode=disable
+      PORT: 8080
+    ports:
+      - "8080:8080"
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - finance_network
+
+  goose:
+    build: .
+    command: sh -c "/usr/local/bin/wait-for-it db:5432 --strict --timeout=30 -- goose -dir /app/migrations postgres 'postgres://postgres:postgres@db:5432/testdb?sslmode=disable' up"
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - finance_network
+
+volumes:
+  pg_data:
+
+networks:
+  finance_network:
+    driver: bridge
