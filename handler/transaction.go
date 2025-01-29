@@ -17,9 +17,8 @@ func NewTransactionHandler(service service.TransactionService) *TransactionHandl
 	return &TransactionHandler{service: service}
 }
 
-// Универсальная функция для обработки ошибок
 func (h *TransactionHandler) handleError(c *gin.Context, statusCode int, message string) {
-	logrus.Error(message) // Логируем ошибку
+	logrus.Error(message)
 	c.JSON(statusCode, gin.H{"error": message})
 }
 

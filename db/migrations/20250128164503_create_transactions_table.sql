@@ -8,4 +8,4 @@ CREATE TABLE IF NOT EXISTS transactions (
 );
 
 -- +goose Down
-DROP TABLE transactions;
+DROP TABLE IF EXISTS transactions;
